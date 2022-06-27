@@ -25,20 +25,20 @@ So the script looks something like this
 |> File.stream!()
 |> CSV.decode!(headers: true)
 |> Enum.map(fn row ->
-	{
-		row["service_name"],
-		row["duration"],
-		row["base_price"]
-	}
+  {
+    row["service_name"],
+    row["duration"],
+    row["base_price"]
+  }
 end)
 ```
 
-When run, this script outputs a list of tuples similar to the one below
+When run, this script outputs a list of tuples shown below.
 ```elixir
 [
-	{"Haircut", "30", "50"},
-	{"Manicure", "60", "50"},
-	{"Pedicure", "90", "70"}
+  {"Haircut", "30", "50"},
+  {"Manicure", "60", "50"},
+  {"Pedicure", "90", "70"}
 ]
 ```
 
@@ -75,11 +75,11 @@ The problem started when we wanted to translate some of the strings from the CSV
 So the outcome we want to achieve is to have `some_important_function` as
 ```elixir
 def some_important_function do
-	[
-		{gettext("Haircut"), "30", "50"},
-		{gettext("Manicure"), "60", "50"},
-		{gettext("Pedicure"), "90", "70"}
-	]
+  [
+    {gettext("Haircut"), "30", "50"},
+    {gettext("Manicure"), "60", "50"},
+    {gettext("Pedicure"), "90", "70"}
+  ]
 end
 ```
 
@@ -95,6 +95,7 @@ One solution would be to manually wrap the necessary strings with `gettext/1` in
 Doing some research and asking around in [Elixir Slack](https://elixir-slackin.herokuapp.com/), I figured we could solve the problem using Elixir AST.
 
 > What is the AST?
+>
 > An AST, acronym for Abstact Syntax Tree, is a representation of code as a data structure. This data structure is used by Elixir to run Elixir code: either by interpreting it directly: executing the commands in the AST by recursively walking it; or by compiling it: translating the AST into another format, namely BEAM bytecode instructions, which then are saved to disk as .beam files.<sup>[source: botsquad](https://www.botsquad.com/2019/04/11/the-ast-explained/)</sup>
 
 We will first read the CSV at compile time and create the tuple list, which will then be used to create an AST with `gettext/1` macro used wherever necessary.
@@ -103,13 +104,14 @@ Moreover, we will use [`@external_resource`](https://hexdocs.pm/elixir/main/Modu
 No more running scripts manually. 🎉
 
 > `@external_resource`
+>
 > Tools may use this information to ensure the module is recompiled in case any of the external resources change, see for example: mix compile.elixir. <sup>[source: Hexdocs](https://hexdocs.pm/elixir/main/Module.html#module-external_resource)</sup>
 
 ```elixir
 defmodule Playground do
   # This way our module will be recompiled whenever
-	# you make changes to the CSV file.
-	# Make some changes to the CSV file and recompile to see it in action.
+  # you make changes to the CSV file.
+  # Make some changes to the CSV file and recompile to see it in action.
   @external_resource "./lib/foo.csv"
 
 	# Nothing fancy here, we're just creating a list of tuples
@@ -133,7 +135,7 @@ defmodule Playground do
   #   {"Pedicure", "90", "70"}
   # ]
 
-	# This is where we build the AST.
+  # This is where we build the AST.
   data_ast =
     Enum.map(data, fn tuple ->
       list =
@@ -162,8 +164,8 @@ defmodule Playground do
   #   {gettext("Pedicure"), "90", "70"}
   # ]
 
-	# Now, this function would return the same thing
-	# that's returned by Macro.to_string/1 above
+  # Now, this function would return the same thing
+  # that's returned by Macro.to_string/1 above
   def some_important_function do
     unquote(data_ast)
   end

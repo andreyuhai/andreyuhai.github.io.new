@@ -92,7 +92,7 @@ One solution would be to manually wrap the necessary strings with `gettext/1` in
 
 ## Solving the problem at compile time with Elixir AST
 
-Doing some research and asking around in [Elixir Slack](https://elixir-slackin.herokuapp.com/), I figured we could solve the problem using Elixir AST.
+Doing some research and asking around in [Elixir Slack](https://elixir-slackin.herokuapp.com/) (shout out to @lostkobrakai), I figured we could solve the problem using Elixir AST.
 
 > What is the AST?
 >
